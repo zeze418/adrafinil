@@ -229,7 +229,7 @@ struct InstallerView: View {
         .glassCard(cornerRadius: Theme.Radius.inner)
     }
 
-    private func installItem(icon: String, title: Text, detail: String) -> some View {
+    private func installItem(icon: String, title: Text, detail: LocalizedStringKey) -> some View {
         HStack(alignment: .top, spacing: Theme.Space.md) {
             Image(systemName: icon)
                 .font(.system(size: 18))
@@ -248,9 +248,9 @@ struct InstallerView: View {
     }
 
     private var continueTitle: String {
-        if registering { return "Registering…" }
-        if needsApproval { return "Continue" }
-        return helperErrors.isEmpty ? "Continue" : "Retry"
+        if registering { return String(localized: "Registering…") }
+        if needsApproval { return String(localized: "Continue") }
+        return helperErrors.isEmpty ? String(localized: "Continue") : String(localized: "Retry")
     }
 
     /// Guidance shown when SMAppService registered the services but the user must approve them in

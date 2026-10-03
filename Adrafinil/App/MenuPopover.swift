@@ -188,20 +188,20 @@ struct MenuPopover: View {
     private func statusCard(_ s: DaemonStatus, state: HeroState, now _: Date) -> some View {
         let (tint, title, subtitle, dimmed): (Color, String, String, Bool) = switch state {
         case .awake:
-            (Theme.awake, "Keeping your Mac awake", awakeSubtitle(s), false)
+            (Theme.awake, String(localized: "Keeping your Mac awake"), awakeSubtitle(s), false)
         case .cutout:
-            (Theme.cutout, cutoutTitle(s), "Your Mac can sleep again", false)
+            (Theme.cutout, cutoutTitle(s), String(localized: "Your Mac can sleep again"), false)
         case .idle:
             (
                 .secondary,
-                "Sleeping normally",
+                String(localized: "Sleeping normally"),
                 device.hasLid
-                    ? "No agents active — close the lid and your Mac sleeps"
-                    : "No agents active — your Mac sleeps when idle",
+                    ? String(localized: "No agents active — close the lid and your Mac sleeps")
+                    : String(localized: "No agents active — your Mac sleeps when idle"),
                 true,
             )
         case .paused:
-            (.secondary, "Paused", "Agents can't keep your Mac awake until you resume", false)
+            (.secondary, String(localized: "Paused"), String(localized: "Agents can't keep your Mac awake until you resume"), false)
         }
         return heroCard(tint: tint, title: title, subtitle: subtitle, dimmed: dimmed) {
             if state == .cutout {
@@ -236,10 +236,10 @@ struct MenuPopover: View {
         let waiting = s.assertions.count(where: { $0.origin != .manual && $0.waitingFor != nil })
         let agents = s.assertions.count - holds - waiting
         var parts: [String] = []
-        if agents > 0 { parts.append("\(agents) \(agents == 1 ? "agent" : "agents") working") }
-        if waiting > 0 { parts.append("\(waiting) waiting on you") }
-        if holds > 0 { parts.append("\(holds) \(holds == 1 ? "hold" : "holds")") }
-        return parts.isEmpty ? "Your Mac will stay awake" : parts.joined(separator: " · ")
+        if agents > 0 { parts.append(String(localized: "\(agents) agents working")) }
+        if waiting > 0 { parts.append(String(localized: "\(waiting) waiting on you")) }
+        if holds > 0 { parts.append(String(localized: "\(holds) holds")) }
+        return parts.isEmpty ? String(localized: "Your Mac will stay awake") : parts.joined(separator: " · ")
     }
 
     private func heroCard(
@@ -295,44 +295,44 @@ struct MenuPopover: View {
         switch status.repairPhase {
         case .repairing:
             serviceActionCard(
-                title: "Repairing Adrafinil…",
-                message: "Re-registering its background services and checking they respond.",
+                title: String(localized: "Repairing Adrafinil…"),
+                message: String(localized: "Re-registering its background services and checking they respond."),
                 busy: true,
             )
         case .failed:
             // Re-registration couldn't clear the wedged records: the one remaining fix is removing
             // Adrafinil's own entry in Login Items (a targeted reset, not a system-wide one).
             serviceActionCard(
-                title: "Couldn't repair Adrafinil automatically",
-                message: "Open Login Items & Extensions, switch Adrafinil off and remove it with the “–” button, then reopen the app — or try repairing once more.",
-                primaryTitle: "Open Login Items",
+                title: String(localized: "Couldn't repair Adrafinil automatically"),
+                message: String(localized: "Open Login Items & Extensions, switch Adrafinil off and remove it with the “–” button, then reopen the app — or try repairing once more."),
+                primaryTitle: String(localized: "Open Login Items"),
                 primaryAction: { SMAppService.openSystemSettingsLoginItems() },
-                secondaryTitle: "Repair Again",
+                secondaryTitle: String(localized: "Repair Again"),
                 secondaryAction: { Task { await status.repair() } },
             )
         case .idle:
             switch status.serviceState {
             case .needsApproval:
                 serviceActionCard(
-                    title: "Adrafinil needs your approval",
-                    message: "Turn Adrafinil on under “Allow in the Background” so it can keep your Mac awake while agents work. If it won't turn on, try Repair.",
-                    primaryTitle: "Open Login Items",
+                    title: String(localized: "Adrafinil needs your approval"),
+                    message: String(localized: "Turn Adrafinil on under “Allow in the Background” so it can keep your Mac awake while agents work. If it won't turn on, try Repair."),
+                    primaryTitle: String(localized: "Open Login Items"),
                     primaryAction: { SMAppService.openSystemSettingsLoginItems() },
-                    secondaryTitle: "Repair",
+                    secondaryTitle: String(localized: "Repair"),
                     secondaryAction: { Task { await status.repair() } },
                 )
             case .notRegistered:
                 serviceActionCard(
-                    title: "Adrafinil isn't set up",
-                    message: "Its background service isn't registered, so it can't keep your Mac awake. Repair it to register it again.",
-                    primaryTitle: "Repair",
+                    title: String(localized: "Adrafinil isn't set up"),
+                    message: String(localized: "Its background service isn't registered, so it can't keep your Mac awake. Repair it to register it again."),
+                    primaryTitle: String(localized: "Repair"),
                     primaryAction: { Task { await status.repair() } },
                 )
             case .unreachable:
                 serviceActionCard(
-                    title: "Adrafinil's helper stopped",
-                    message: "Its background service isn't responding. Repair it to re-register and bring it back.",
-                    primaryTitle: "Repair",
+                    title: String(localized: "Adrafinil's helper stopped"),
+                    message: String(localized: "Its background service isn't responding. Repair it to re-register and bring it back."),
+                    primaryTitle: String(localized: "Repair"),
                     primaryAction: { Task { await status.repair() } },
                 )
             case .ok:
@@ -430,10 +430,11 @@ struct MenuPopover: View {
     private func agentDriftCard(_ agents: [AgentKind]) -> some View {
         let single = agents.count == 1
         let title = single
-            ? "\(agents[0].displayName) may not be tracked"
-            : "\(agents.count) agents may not be tracked"
-        let subject = single ? "Its" : "Their"
-        let verb = single ? "it works" : "they work"
+            ? String(localized: "\(agents[0].displayName) may not be tracked")
+            : String(localized: "\(agents.count) agents may not be tracked")
+        let message = single
+            ? String(localized: "Its Adrafinil hook changed, so your Mac might not stay awake while it works. Open Settings to reconnect.")
+            : String(localized: "Their Adrafinil hook changed, so your Mac might not stay awake while they work. Open Settings to reconnect.")
         return SettingsLink {
             HStack(spacing: Theme.Space.md) {
                 Image(systemName: "exclamationmark.triangle.fill")
@@ -443,7 +444,7 @@ struct MenuPopover: View {
                     .frame(width: 30)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(title).font(.system(.body, design: .rounded).weight(.semibold))
-                    Text("\(subject) Adrafinil hook changed, so your Mac might not stay awake while \(verb). Open Settings to reconnect.")
+                    Text(message)
                         .font(.caption).foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
@@ -586,7 +587,7 @@ struct MenuPopover: View {
                 .frame(width: 30)
             VStack(alignment: .leading, spacing: 4) {
                 ForEach(warnings, id: \.self) { warning in
-                    Text(warning)
+                    Text(localizedDaemonText(warning))
                         .font(.caption)
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
@@ -645,7 +646,7 @@ struct MenuPopover: View {
     @ViewBuilder
     private func keepAwakeButton(prominent: Bool) -> some View {
         let action = { withAnimation(.smooth(duration: 0.3)) { openPicker() } }
-        let help = "Keep your Mac awake for a set time"
+        let help = String(localized: "Keep your Mac awake for a set time")
         if prominent {
             Button(action: action) {
                 Text("Keep awake").frame(maxWidth: .infinity).foregroundStyle(Theme.onAwake)
@@ -677,7 +678,7 @@ struct MenuPopover: View {
     private func durationPicker() -> some View {
         HStack(spacing: Theme.Space.xs) {
             // Leading ✕ — persistent. Cancels the picker, or steps back out of custom mode.
-            pickerIcon("xmark", help: customMode ? "Back to presets" : "Cancel") {
+            pickerIcon("xmark", help: customMode ? String(localized: "Back to presets") : String(localized: "Cancel")) {
                 withAnimation(.smooth(duration: 0.3)) {
                     if customMode { customMode = false } else { closePicker() }
                 }
@@ -747,11 +748,11 @@ struct MenuPopover: View {
     @ViewBuilder
     private func primaryPickerButton() -> some View {
         if customMode {
-            pickerIcon("play.fill", tint: Theme.awake, help: "Start keeping awake") {
+            pickerIcon("play.fill", tint: Theme.awake, help: String(localized: "Start keeping awake")) {
                 commitCustomText(); place(minutes: Double(customMinutes))
             }
         } else {
-            pickerIcon("pencil", help: "Custom duration") {
+            pickerIcon("pencil", help: String(localized: "Custom duration")) {
                 withAnimation(.smooth(duration: 0.3)) { enterCustomMode() }
             }
         }
@@ -770,7 +771,11 @@ struct MenuPopover: View {
         let isHours = minutes % 60 == 0
         var number = AttributedString(isHours ? "\(minutes / 60)" : "\(minutes)")
         number.font = .system(size: 14, weight: .semibold, design: .rounded)
-        var unit = AttributedString(isHours ? "h" : "m")
+        var unit = AttributedString(
+            isHours
+                ? String(localized: "duration.pill.hours", defaultValue: "h", comment: "Unit after the hour count on a duration pill (1h)")
+                : String(localized: "duration.pill.minutes", defaultValue: "m", comment: "Unit after the minute count on a duration pill (15m)"),
+        )
         unit.font = .system(size: 9.5, weight: .semibold, design: .rounded)
         return number + unit
     }
@@ -886,7 +891,7 @@ struct MenuPopover: View {
             // put and turns red.
             HStack(spacing: Theme.Space.sm) {
                 Spacer(minLength: 0)
-                FooterIconButton("Cancel", systemImage: "arrow.uturn.backward") { confirmingQuit = false }
+                FooterIconButton(String(localized: "Cancel"), systemImage: "arrow.uturn.backward") { confirmingQuit = false }
                     .help("Cancel")
                 Button { NSApp.terminate(nil) } label: {
                     Image(systemName: "xmark")
@@ -921,7 +926,7 @@ struct MenuPopover: View {
                 .help("Settings…")
             // `xmark` (quit the app), not `power` — a power glyph in a Mac context reads as
             // "shut down the Mac", the wrong mental model for closing the app.
-            FooterIconButton("Quit Adrafinil", systemImage: "xmark") { confirmingQuit = true }
+            FooterIconButton(String(localized: "Quit Adrafinil"), systemImage: "xmark") { confirmingQuit = true }
                 .help("Quit Adrafinil")
         }
     }
@@ -962,7 +967,7 @@ struct MenuPopover: View {
         s.lastEvent == .lowBatteryCutout ? "battery.25percent" : "exclamationmark.triangle.fill"
     }
     private func cutoutTitle(_ s: DaemonStatus) -> String {
-        s.lastEvent == .lowBatteryCutout ? "Low-battery cutout" : "Thermal cutout"
+        s.lastEvent == .lowBatteryCutout ? String(localized: "Low-battery cutout") : String(localized: "Thermal cutout")
     }
 }
 
@@ -993,7 +998,7 @@ struct AssertionRow: View {
     }
 
     private var displayTool: String {
-        AgentKind(rawValue: assertion.tool)?.displayName ?? assertion.tool
+        AgentKind(rawValue: assertion.tool)?.displayName ?? localizedDaemonText(assertion.tool)
     }
 
     /// The owning agent has stopped mid-turn and is waiting for the user (see
@@ -1012,9 +1017,9 @@ struct AssertionRow: View {
         if isHold || isWaitingOnUser, let exp = assertion.expiresAt {
             let remaining = max(0, Int(exp.timeIntervalSince(now)))
             let hours = remaining / 3_600, minutes = (remaining % 3_600) / 60
-            if hours > 0 { return "\(hours)h \(minutes)m" }
-            if minutes > 0 { return "\(minutes)m" }
-            return "<1m"
+            if hours > 0 { return String(localized: "\(hours)h \(minutes)m") }
+            if minutes > 0 { return String(localized: "\(minutes)m") }
+            return String(localized: "<1m")
         }
         return now.timeIntervalSince(assertion.acquiredAt).compactDurationString
     }
@@ -1045,7 +1050,7 @@ struct AssertionRow: View {
                 Text(waitingLine).font(.caption).foregroundStyle(.secondary).lineLimit(1)
                     .padding(.leading, 14 + Theme.Space.sm)
             } else if let reason = assertion.reason, !reason.isEmpty {
-                Text(reason).font(.caption).foregroundStyle(.secondary).lineLimit(1)
+                Text(localizedDaemonText(reason)).font(.caption).foregroundStyle(.secondary).lineLimit(1)
                     .padding(.leading, 14 + Theme.Space.sm)
             }
         }
@@ -1058,7 +1063,7 @@ struct AssertionRow: View {
     /// the wait is the row's current truth, the reason its history.
     private var waitingLine: String? {
         guard let label = assertion.waitingFor else { return nil }
-        return label == "input needed" ? "Waiting for your answer" : "Waiting for you — \(label)"
+        return label == "input needed" ? String(localized: "Waiting for your answer") : String(localized: "Waiting for you — \(label)")
     }
 
     /// One filled dot for every row — holds and agents alike. A single glyph keeps every mark on the

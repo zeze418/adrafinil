@@ -18,7 +18,7 @@ struct CodexTrustView: View {
     /// Reads the current trust status (live from disk in production; canned in previews).
     let readStatus: () -> CodexHookTrust.Status
     /// Primary button label and action — "Continue" advances the installer; "Done" dismisses the sheet.
-    let primaryTitle: String
+    let primaryTitle: LocalizedStringKey
     let onPrimary: () -> Void
 
     @State private var status: CodexHookTrust.Status = .unknown
@@ -110,13 +110,13 @@ struct CodexTrustView: View {
     private var statusChip: some View {
         switch status {
         case .trusted:
-            StateChip(text: "Hooks trusted", systemImage: "checkmark.seal.fill", tint: Theme.ok)
+            StateChip(text: String(localized: "Hooks trusted"), systemImage: "checkmark.seal.fill", tint: Theme.ok)
         case .partiallyTrusted:
-            StateChip(text: "Partly trusted — approve both", systemImage: "exclamationmark.triangle.fill", tint: Theme.warn)
+            StateChip(text: String(localized: "Partly trusted — approve both"), systemImage: "exclamationmark.triangle.fill", tint: Theme.warn)
         case .untrusted:
-            StateChip(text: "Not trusted yet", systemImage: "hourglass", tint: Theme.warn)
+            StateChip(text: String(localized: "Not trusted yet"), systemImage: "hourglass", tint: Theme.warn)
         case .unknown:
-            StateChip(text: "Can't verify — trust it in Codex", systemImage: "questionmark.circle", tint: .secondary)
+            StateChip(text: String(localized: "Can't verify — trust it in Codex"), systemImage: "questionmark.circle", tint: .secondary)
         }
     }
 
@@ -139,7 +139,7 @@ struct CodexTrustView: View {
 /// One numbered instruction row: a circled step number beside a heading and detail content.
 private struct TrustStep<Content: View>: View {
     let number: Int
-    let title: String
+    let title: LocalizedStringKey
     @ViewBuilder let content: Content
 
     var body: some View {

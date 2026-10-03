@@ -21,6 +21,12 @@ struct ManualHookView: View {
         var id: String {
             rawValue
         }
+        var title: LocalizedStringKey {
+            switch self {
+            case .hooks: "It has hooks / events"
+            case .wrap: "It has no hooks — wrap the command"
+            }
+        }
     }
 
     private var snippet: ManualHookSnippet {
@@ -31,7 +37,7 @@ struct ManualHookView: View {
         Section {
             nameField
             Picker("Integration style", selection: $mode) {
-                ForEach(Mode.allCases) { Text($0.rawValue).tag($0) }
+                ForEach(Mode.allCases) { Text($0.title).tag($0) }
             }
             .pickerStyle(.segmented)
             .labelsHidden()
@@ -102,7 +108,7 @@ struct ManualHookView: View {
 /// A quaternary inset (not `glassCard`) reads as a code block and sits right inside the grouped
 /// Form's own material rather than stacking glass on glass.
 private struct SnippetRow: View {
-    let label: String
+    let label: LocalizedStringKey
     let code: String
 
     var body: some View {

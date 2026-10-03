@@ -120,7 +120,7 @@ struct GeneralSettingsTab: View {
     @State private var notificationsDenied = false
 
     private let chimeOptions: [(id: String, label: String)] = [
-        ("default", "Adrafinil chime"),
+        ("default", String(localized: "Adrafinil chime")),
         ("Submarine", "Submarine"),
         ("Ping", "Ping"),
         ("Tink", "Tink"),
@@ -130,17 +130,17 @@ struct GeneralSettingsTab: View {
     /// Pre-sleep cue options: same system sounds, plus a per-cause "Off" and the cause's own
     /// synthesized cue as the default.
     private let sleepCueOptions: [(id: String, label: String)] = [
-        ("default", "Adrafinil cue"),
+        ("default", String(localized: "Adrafinil cue")),
         ("Submarine", "Submarine"),
         ("Ping", "Ping"),
         ("Tink", "Tink"),
         ("Glass", "Glass"),
-        ("off", "Off"),
+        ("off", String(localized: "Off")),
     ]
 
     /// One per-cause row of the "When sleep resumes" section: a sound picker plus a preview
     /// button, previewing on change like the lid-close chime row.
-    private func sleepCueRow(_ title: String, selection: Binding<String>, cue: ChimeSynth.Cue) -> some View {
+    private func sleepCueRow(_ title: LocalizedStringKey, selection: Binding<String>, cue: ChimeSynth.Cue) -> some View {
         LabeledContent(title) {
             HStack(spacing: Theme.Space.sm) {
                 Picker(title, selection: selection) {
@@ -347,17 +347,17 @@ struct GeneralSettingsTab: View {
     private var updatesFooter: String {
         if settings.autoInstallUpdates {
             if let pending = installer.pendingVersion {
-                return "Version \(pending) is downloaded and verified — it installs at a quiet moment, when your Mac is idle and no agents are being kept awake."
+                return String(localized: "Version \(pending) is downloaded and verified — it installs at a quiet moment, when your Mac is idle and no agents are being kept awake.")
             }
-            return "Adrafinil checks GitHub Releases once a day and verifies every download's code signature. Updates install themselves when your Mac is idle and no agents are being kept awake — or right away with Update Now."
+            return String(localized: "Adrafinil checks GitHub Releases once a day and verifies every download's code signature. Updates install themselves when your Mac is idle and no agents are being kept awake — or right away with Update Now.")
         }
-        return "Adrafinil checks GitHub Releases once a day and tells you here and in the menu when a new version is out. Nothing downloads or installs until you choose Update Now."
+        return String(localized: "Adrafinil checks GitHub Releases once a day and tells you here and in the menu when a new version is out. Nothing downloads or installs until you choose Update Now.")
     }
 
     private var checkButtonTitle: String {
-        if installer.isChecking { return "Checking for updates…" }
-        if installer.checkedUpToDate { return "You're up to date" }
-        return "Check for updates"
+        if installer.isChecking { return String(localized: "Checking for updates…") }
+        if installer.checkedUpToDate { return String(localized: "You're up to date") }
+        return String(localized: "Check for updates")
     }
 
     private func performUninstall() {
@@ -598,13 +598,13 @@ private struct AgentInstallRow: View {
     private var stateChip: some View {
         switch model.installState {
         case .installed:
-            StateChip(text: "Connected", systemImage: "checkmark.circle.fill", tint: Theme.ok)
+            StateChip(text: String(localized: "Connected"), systemImage: "checkmark.circle.fill", tint: Theme.ok)
         case .notInstalled:
             EmptyView()
         case .modifiedExternally:
-            StateChip(text: "Needs reconnect", systemImage: "exclamationmark.triangle.fill", tint: Theme.warn)
+            StateChip(text: String(localized: "Needs reconnect"), systemImage: "exclamationmark.triangle.fill", tint: Theme.warn)
         case .configUnreadable:
-            StateChip(text: "Config unreadable", systemImage: "exclamationmark.octagon.fill", tint: Theme.warn)
+            StateChip(text: String(localized: "Config unreadable"), systemImage: "exclamationmark.octagon.fill", tint: Theme.warn)
         }
     }
 }
@@ -681,7 +681,7 @@ struct SafetySettingsTab: View {
                 Stepper(value: $settings.agentWaitingGraceMinutes, in: 1 ... 60) {
                     LabeledContent(
                         "Grace period",
-                        value: "\(settings.agentWaitingGraceMinutes) min",
+                        value: String(localized: "\(settings.agentWaitingGraceMinutes) min"),
                     )
                 }
                 .disabled(settings.agentWaitingPolicy != .grace)
@@ -716,7 +716,7 @@ struct SafetySettingsTab: View {
                 Stepper(value: $settings.manualHoldMaxHours, in: 1 ... 12, step: 1) {
                     LabeledContent(
                         "Longest a hold can last",
-                        value: "\(Int(settings.manualHoldMaxHours)) \(Int(settings.manualHoldMaxHours) == 1 ? "hour" : "hours")",
+                        value: String(localized: "\(Int(settings.manualHoldMaxHours)) hours"),
                     )
                 }
                 .disabled(!settings.agentHoldsEnabled)
